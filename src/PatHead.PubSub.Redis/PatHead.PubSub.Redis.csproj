@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Version>0.0.0.1</Version>
+        <RootNamespace>PatHead.PubSub.Redis</RootNamespace>
+        <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
+        <Description>
+            PatHead.PubSub.Redis
+        </Description>
+        <Authors>PatHead</Authors>
+        <Owners>PatHead</Owners>
+        <Title>PatHead.PubSub.Redis</Title>
+        <Summary>PubSub Util</Summary>
+        <RepositoryUrl>https://github.com/Pat-head/ph.pubsub</RepositoryUrl>
+        <PackageId>PatHead.PubSub.Redis</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\PatHead.PubSub.Core\PatHead.PubSub.Core.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CSRedisCore" Version="3.8.670"/>
+    </ItemGroup>
+
+</Project>
