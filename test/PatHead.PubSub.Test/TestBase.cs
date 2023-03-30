@@ -14,7 +14,7 @@ namespace PatHead.PubSub.Test
 
         private readonly ITestOutputHelper _testOutputHelper;
 
-        public TestBase(ITestOutputHelper testOutputHelper)
+        protected TestBase(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
             CreateServiceCollection();
@@ -36,7 +36,7 @@ namespace PatHead.PubSub.Test
 
             ServiceProvider = services.BuildServiceProvider();
             var redisPubSubFactory = ServiceProvider.GetService<RedisPubSubFactory>();
-            redisPubSubFactory.Run();
+            redisPubSubFactory.Start();
         }
     }
 }

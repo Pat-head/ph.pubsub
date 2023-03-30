@@ -20,21 +20,44 @@ namespace PatHead.PubSub.Test
         public async Task TestPublish1()
         {
             var service = this.ServiceProvider.GetService<RedisPublisher>();
-            while (true)
+            
+            var redisPubSubFactory = ServiceProvider.GetService<RedisPubSubFactory>();
+            
+            for (int i = 0; i < 1000000; i++)
             {
                 Thread.Sleep(100);
-                await service.PublishAsync("key", null, "oh");
+                await service.PublishMpAsync("key", null, $"This is my {i} message;");
+                redisPubSubFactory.PrintStatus();
             }
         }
     }
 
-
-    [RedisSub(Key = "key")]
-    public class SubService : ISub
+    [RedisSub("key", multicast: true, persistence: true)]
+    public class SubPersistenceService1 : ISub
     {
         public Task Handler(object body)
         {
-            Console.WriteLine($"{body}");
+            Console.WriteLine($"I am Judy ,{body}");
+            return Task.CompletedTask;
+        }
+    }
+
+    [RedisSub("key", multicast: true, persistence: true)]
+    public class SubPersistenceService2 : ISub
+    {
+        public Task Handler(object body)
+        {
+            Console.WriteLine($"I am John ,{body}");
+            return Task.CompletedTask;
+        }
+    }
+
+    [RedisSub("key", multicast: true, persistence: true)]
+    public class SubPersistenceService3 : ISub
+    {
+        public Task Handler(object body)
+        {
+            Console.WriteLine($"I am Naveen,{body}");
             return Task.CompletedTask;
         }
     }

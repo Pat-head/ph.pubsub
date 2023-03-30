@@ -4,9 +4,40 @@ using PatHead.PubSub.Core;
 
 namespace PatHead.PubSub.Redis
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class RedisSubAttribute : Attribute, ISubAttribute
     {
-        public string Prefix { get; set; }
-        public string Key { get; set; }
+        /// <summary>
+        /// Prefix
+        /// </summary>
+        public string Prefix { get; private set; }
+
+        /// <summary>
+        /// Key
+        /// </summary>
+        public string Key { get; private set; }
+
+        /// <summary>
+        /// Persistence
+        /// </summary>
+        public bool Persistence { get; private set; } = false;
+
+        /// <summary>
+        /// Multicast
+        /// </summary>
+        public bool Multicast { get; private set; } = false;
+
+        /// <summary>
+        /// RedisSubAttribute
+        /// </summary>
+        public RedisSubAttribute(string key, string prefix = null, bool persistence = false, bool multicast = false)
+        {
+            Key = key;
+            Prefix = prefix;
+            Persistence = persistence;
+            Multicast = multicast;
+        }
     }
 }

@@ -18,11 +18,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\PatHead.PubSub.Core\PatHead.PubSub.Core.csproj"/>
+        <ProjectReference Include="..\PatHead.PubSub.Core\PatHead.PubSub.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CSRedisCore" Version="3.8.670"/>
+        <PackageReference Include="CSRedisCore" Version="3.8.670" />
     </ItemGroup>
 
 </Project>

@@ -79,8 +79,8 @@ namespace PatHead.PubSub.Core
 
 
         /// <summary>
-        /// 
+        /// Start
         /// </summary>
-        public abstract void Run();
+        public abstract void Start();
     }
 }
