@@ -83,4 +83,25 @@ namespace PatHead.PubSub.Core
         /// </summary>
         public abstract void Start();
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class TaskRunInfo
+    {
+        public Task Task { get; }
+
+        public ISubRunContainer SubRunContainer { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="subRunContainer"></param>
+        /// <param name="task"></param>
+        public TaskRunInfo(ISubRunContainer subRunContainer, Task task)
+        {
+            SubRunContainer = subRunContainer;
+            Task = task;
+        }
+    }
 }

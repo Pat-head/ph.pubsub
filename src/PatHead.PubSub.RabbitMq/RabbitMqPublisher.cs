@@ -1,26 +1,27 @@
-﻿using System;
+﻿using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using PatHead.PubSub.Core;
+using PatHead.PubSub.Redis;
+using RabbitMQ.Client;
 
-namespace PatHead.PubSub.Redis
+namespace PatHead.PubSub.RabbitMq
 {
     /// <summary>
     /// RedisPublisher
     /// </summary>
-    public class RedisPublisher
+    public class RabbitMqPublisher
     {
-        private readonly RedisProvider _redisProvider;
-        private readonly RedisPubSubOption _options;
+        private readonly RabbitMqProvider _rabbitMqProvider;
+        private readonly RabbitMqPubSubOption _options;
 
         /// <summary>
         /// RedisPublisher
         /// </summary>
-        /// <param name="redisProvider"></param>
+        /// <param name="rabbitMqProvider"></param>
         /// <param name="options"></param>
-        public RedisPublisher(RedisProvider redisProvider, IOptions<RedisPubSubOption> options)
+        public RabbitMqPublisher(RabbitMqProvider rabbitMqProvider, IOptions<RabbitMqPubSubOption> options)
         {
-            _redisProvider = redisProvider;
+            _rabbitMqProvider = rabbitMqProvider;
             _options = options.Value;
         }
 
@@ -34,7 +35,10 @@ namespace PatHead.PubSub.Redis
         public Task PublishAsync(string key, string prefix, string message)
         {
             var finalKey = Generator.GenerateKey(key, true, true, prefix, _options.Environment);
-            return _redisProvider.GetClient().LPushAsync(finalKey, message);
+            var model = _rabbitMqProvider.GetClient().CreateModel();
+            var body = Encoding.UTF8.GetBytes(message);
+            model.BasicPublish(string.Empty, finalKey, false, null, body);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -47,7 +51,11 @@ namespace PatHead.PubSub.Redis
         public Task PublishBroadcastAsync(string key, string prefix, string message)
         {
             var finalKey = Generator.GenerateKey(key, true, false, prefix, _options.Environment);
-            return _redisProvider.GetClient().LPushAsync(finalKey, message);
+            var channel = _rabbitMqProvider.GetClient().CreateModel();
+            channel.ExchangeDeclare(finalKey, ExchangeType.Fanout);
+            var body = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(finalKey, "", false, null, body);
+            return Task.CompletedTask;
         }
     }
 }

@@ -22,6 +22,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\PatHead.PubSub.Core\PatHead.PubSub.Core.csproj" />
+      <ProjectReference Include="..\..\src\PatHead.PubSub.RabbitMq\PatHead.PubSub.RabbitMq.csproj" />
       <ProjectReference Include="..\..\src\PatHead.PubSub.Redis\PatHead.PubSub.Redis.csproj" />
     </ItemGroup>
 

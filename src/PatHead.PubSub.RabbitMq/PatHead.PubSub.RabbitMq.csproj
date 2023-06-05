@@ -5,22 +5,25 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Version>0.0.0.3</Version>
-        <RootNamespace>PatHead.PubSub.Core</RootNamespace>
+        <RootNamespace>PatHead.PubSub.RabbitMq</RootNamespace>
         <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
         <Description>
-            PubSub Util
+            PatHead.PubSub.RabbitMq
         </Description>
         <Authors>PatHead</Authors>
         <Owners>PatHead</Owners>
-        <Title>PatHead.PubSub</Title>
+        <Title>PatHead.PubSub.RabbitMq</Title>
         <Summary>PubSub Util</Summary>
         <RepositoryUrl>https://github.com/Pat-head/ph.pubsub</RepositoryUrl>
-        <PackageId>PatHead.PubSub.Core</PackageId>
+        <PackageId>PatHead.PubSub.RabbitMq</PackageId>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.9" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.9" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.9" />
+      <ProjectReference Include="..\PatHead.PubSub.Core\PatHead.PubSub.Core.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
+    </ItemGroup>
+
 </Project>

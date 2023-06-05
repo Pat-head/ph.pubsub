@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Security.Principal;
 using PatHead.PubSub.Core;
 
-namespace PatHead.PubSub.Redis
+namespace PatHead.PubSub.RabbitMq
 {
     /// <summary>
     /// 
     /// </summary>
-    public class RedisSubAttribute : Attribute, ISubAttribute
+    public class RabbitMqSubAttribute : Attribute, ISubAttribute
     {
         /// <summary>
         /// Name
@@ -30,9 +29,9 @@ namespace PatHead.PubSub.Redis
         public bool Seize { get; private set; } = false;
 
         /// <summary>
-        /// RedisSubAttribute
+        /// RabbitMqSubAttribute
         /// </summary>
-        public RedisSubAttribute(string name, string key, string prefix = null, bool seize = false)
+        public RabbitMqSubAttribute(string name, string key, string prefix = null, bool seize = false)
         {
             Name = name;
             Key = key;

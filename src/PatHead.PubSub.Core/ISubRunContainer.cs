@@ -8,6 +8,12 @@ namespace PatHead.PubSub.Core
     public interface ISubRunContainer
     {
         /// <summary>
+        /// 
+        /// </summary>
+        int Count { get; set; }
+
+
+        /// <summary>
         /// Run
         /// </summary>
         /// <returns></returns>

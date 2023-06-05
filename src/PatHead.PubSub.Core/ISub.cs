@@ -8,11 +8,11 @@ namespace PatHead.PubSub.Core
     /// </summary>
     public interface ISub
     {
-         /// <summary>
-         /// 
-         /// </summary>
-         /// <param name="body"></param>
-         /// <returns></returns>
-         Task Handler(Object body);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="body"></param>
+        /// <returns></returns>
+        Task Handler(Object body);
     }
 }

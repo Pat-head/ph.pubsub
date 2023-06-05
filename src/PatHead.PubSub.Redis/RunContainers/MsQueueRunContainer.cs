@@ -1,12 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using PatHead.PubSub.Core;
 
 namespace PatHead.PubSub.Redis.RunContainers
 {
     /// <summary>
-    /// MQueueRunContainer
+    /// 持久化争抢队列
     /// </summary>
-    public class MQueueRunContainer : ISubRunContainer
+    public class MsQueueRunContainer : ISubRunContainer
     {
         private readonly ISub _sub;
         private readonly RedisProvider _redisProvider;
@@ -18,12 +19,14 @@ namespace PatHead.PubSub.Redis.RunContainers
         /// <param name="key"></param>
         /// <param name="sub"></param>
         /// <param name="redisProvider"></param>
-        public MQueueRunContainer(string key, ISub sub, RedisProvider redisProvider)
+        public MsQueueRunContainer(string key, ISub sub, RedisProvider redisProvider)
         {
             _key = key;
             _sub = sub;
             _redisProvider = redisProvider;
         }
+
+        public int Count { get; set; }
 
         /// <summary>
         /// Run
@@ -31,11 +34,19 @@ namespace PatHead.PubSub.Redis.RunContainers
         /// <returns></returns>
         public Task Run()
         {
-            _redisProvider.GetClient().Subscribe((_key, msg =>
+            _redisProvider.GetClient().SubscribeList(_key, msg =>
             {
-                var objBody = msg.Body;
-                _sub.Handler(objBody).GetAwaiter().GetResult();
-            }));
+                // 为空好像类似于健康检查，暂且不管
+                if (string.IsNullOrEmpty(msg))
+                {
+                    return;
+                }
+
+                Count++;
+
+                _sub.Handler(msg).GetAwaiter().GetResult();
+            });
+
             return Task.CompletedTask;
         }
     }

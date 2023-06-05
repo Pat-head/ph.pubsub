@@ -7,17 +7,18 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PatHead.PubSub.Core;
 using PatHead.PubSub.Core.Model;
-using PatHead.PubSub.Redis.RunContainers;
+using PatHead.PubSub.RabbitMq.RunContainers;
+using PatHead.PubSub.Redis;
 
-namespace PatHead.PubSub.Redis
+namespace PatHead.PubSub.RabbitMq
 {
     /// <summary>
-    /// RedisPubSubFactory
+    /// RabbitMqPubSubFactory
     /// </summary>
-    public class RedisPubSubFactory : AbstractPubSubFactory
+    public class RabbitMqPubSubFactory : AbstractPubSubFactory
     {
-        private readonly ILogger<RedisPubSubFactory> _logger;
-        private readonly RedisPubSubOption _options;
+        private readonly ILogger<RabbitMqPubSubFactory> _logger;
+        private readonly RabbitMqPubSubOption _options;
 
         private Dictionary<string, TaskRunInfo> _tasks = new Dictionary<string, TaskRunInfo>();
 
@@ -27,9 +28,9 @@ namespace PatHead.PubSub.Redis
         /// <param name="serviceProvider"></param>
         /// <param name="logger"></param>
         /// <param name="options"></param>
-        public RedisPubSubFactory(IServiceProvider serviceProvider,
-            ILogger<RedisPubSubFactory> logger,
-            IOptions<RedisPubSubOption> options) : base(serviceProvider)
+        public RabbitMqPubSubFactory(IServiceProvider serviceProvider,
+            ILogger<RabbitMqPubSubFactory> logger,
+            IOptions<RabbitMqPubSubOption> options) : base(serviceProvider)
         {
             _logger = logger;
             _options = options.Value;
@@ -53,11 +54,11 @@ namespace PatHead.PubSub.Redis
         /// </summary>
         public override void Start()
         {
-            var scanResModel = Scan<RedisSubAttribute>(_options.RegisterAssembly);
+            var scanResModel = Scan<RabbitMqSubAttribute>(_options.RegisterAssembly);
 
             foreach (var item in scanResModel.Items)
             {
-                var redisSubAttribute = (RedisSubAttribute)item.SubAttribute;
+                var redisSubAttribute = (RabbitMqSubAttribute)item.SubAttribute;
                 var task = Task.Run(() => CreateRunContainer(item));
                 var subRunContainer = task.GetAwaiter().GetResult();
                 var taskRun = new TaskRunInfo(subRunContainer, task);
@@ -81,11 +82,11 @@ namespace PatHead.PubSub.Redis
 
         private async Task<ISubRunContainer> CreateRunContainer(ScanItemResModel item)
         {
-            var redisSubAttribute = (RedisSubAttribute)item.SubAttribute;
+            var redisSubAttribute = (RabbitMqSubAttribute)item.SubAttribute;
 
             var instance = (ISub)ActivatorUtilities.CreateInstance(this.ServiceProvider, item.Proxy);
 
-            var redisProvider = this.ServiceProvider.GetRequiredService<RedisProvider>();
+            var redisProvider = this.ServiceProvider.GetRequiredService<RabbitMqProvider>();
 
             var finalKey = Generator.GenerateKey(
                 redisSubAttribute.Key,

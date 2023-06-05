@@ -4,17 +4,18 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using PatHead.PubSub.Core;
 using PatHead.PubSub.Core.Model;
+using PatHead.PubSub.RabbitMq;
 using PatHead.PubSub.Redis;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace PatHead.PubSub.Test
 {
-    public class TestPublishRedis : TestBase, IDisposable
+    public class TestPublishRabbitMq : TestBase, IDisposable
     {
         private readonly ITestOutputHelper _testOutputHelper;
 
-        public TestPublishRedis(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        public TestPublishRabbitMq(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
         }
@@ -22,9 +23,9 @@ namespace PatHead.PubSub.Test
         [Fact]
         public async Task TestPublishSeize()
         {
-            var service = this.ServiceProvider.GetService<RedisPublisher>();
+            var service = this.ServiceProvider.GetService<RabbitMqPublisher>();
 
-            var redisPubSubFactory = ServiceProvider.GetService<RedisPubSubFactory>();
+            var rabbitMqPubSubFactory = ServiceProvider.GetService<RabbitMqPubSubFactory>();
 
             Random random = new Random();
 
@@ -33,29 +34,30 @@ namespace PatHead.PubSub.Test
 
             for (int i = 0; i < 10000; i++)
             {
-                var next = random.Next(0, 2);
-
-                if (next == 0)
-                {
-                    seizeMessageCount++;
-                    await service.PublishAsync("seize", null, $"发送一条互斥消息{i}");
-                }
-                else
-                {
-                    noSeizeMessageCount++;
-                    await service.PublishBroadcastAsync("noSeize", null, $"发送一条广播消息{i}");
-                }
+                //await service.PublishAsync("seize", null, $"发送一条互斥消息{i}");
+                // var next = random.Next(0, 2);
+                //
+                // if (next == 0)
+                // {
+                //     seizeMessageCount++;
+                //     await service.PublishAsync("seize", null, $"发送一条互斥消息{i}");
+                // }
+                // else
+                // {
+                noSeizeMessageCount++;
+                await service.PublishBroadcastAsync("noSeize", null, $"发送一条广播消息{i}");
+                // }
             }
 
             {
-                var runContainer1 = redisPubSubFactory.GetSubRunContainer("seize1");
-                var runContainer2 = redisPubSubFactory.GetSubRunContainer("seize2");
+                var runContainer1 = rabbitMqPubSubFactory.GetSubRunContainer("seize1");
+                var runContainer2 = rabbitMqPubSubFactory.GetSubRunContainer("seize2");
                 Assert.True(runContainer1.Count + runContainer2.Count == seizeMessageCount);
             }
 
             {
-                var runContainer1 = redisPubSubFactory.GetSubRunContainer("noSeize1");
-                var runContainer2 = redisPubSubFactory.GetSubRunContainer("noSeize2");
+                var runContainer1 = rabbitMqPubSubFactory.GetSubRunContainer("noSeize1");
+                var runContainer2 = rabbitMqPubSubFactory.GetSubRunContainer("noSeize2");
                 Assert.True(runContainer1.Count == noSeizeMessageCount && runContainer2.Count == noSeizeMessageCount);
             }
         }
@@ -66,8 +68,8 @@ namespace PatHead.PubSub.Test
         }
     }
 
-    [RedisSub("seize1", "seize", seize: true)]
-    public class SubPersistenceService1 : ISub
+    [RabbitMqSub("seize1", "seize", seize: true)]
+    public class SubPersistenceMqService1 : ISub
     {
         public Task Handler(object body)
         {
@@ -76,8 +78,8 @@ namespace PatHead.PubSub.Test
         }
     }
 
-    [RedisSub("seize2", "seize", seize: true)]
-    public class SubPersistenceService2 : ISub
+    [RabbitMqSub("seize2", "seize", seize: true)]
+    public class SubPersistenceMqService2 : ISub
     {
         public Task Handler(object body)
         {
@@ -86,8 +88,8 @@ namespace PatHead.PubSub.Test
         }
     }
 
-    [RedisSub("noSeize1", "noSeize", seize: false)]
-    public class SubPersistenceService3 : ISub
+    [RabbitMqSub("noSeize1", "noSeize", seize: false)]
+    public class SubPersistenceMqService3 : ISub
     {
         public Task Handler(object body)
         {
@@ -96,8 +98,8 @@ namespace PatHead.PubSub.Test
         }
     }
 
-    [RedisSub("noSeize2", "noSeize", seize: false)]
-    public class SubPersistenceService4 : ISub
+    [RabbitMqSub("noSeize2", "noSeize", seize: false)]
+    public class SubPersistenceMqService4 : ISub
     {
         public Task Handler(object body)
         {

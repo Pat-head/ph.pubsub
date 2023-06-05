@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using PatHead.PubSub.Core;
 
-namespace PatHead.PubSub.Redis
+namespace PatHead.PubSub.RabbitMq
 {
     /// <summary>
     /// RedisPubSubOption
     /// </summary>
-    public class RedisPubSubOption : IPubSubOption
+    public class RabbitMqPubSubOption : IPubSubOption
     {
         /// <summary>
         /// 环境名称，用以前缀区分
@@ -14,9 +14,9 @@ namespace PatHead.PubSub.Redis
         public string Environment { get; set; }
 
         /// <summary>
-        /// redis链接字符串
+        /// RabbitMq链接字符串 "amqp://user:pass@hostName:port/vhost"
         /// </summary>
-        public string RedisConnectionString { get; set; }
+        public string RabbitMqConnectionString { get; set; }
 
         /// <summary>
         /// 扫描的订阅程序集
