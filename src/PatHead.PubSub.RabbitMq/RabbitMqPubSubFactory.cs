@@ -59,9 +59,9 @@ namespace PatHead.PubSub.RabbitMq
             foreach (var item in scanResModel.Items)
             {
                 var redisSubAttribute = (RabbitMqSubAttribute)item.SubAttribute;
-                var task = Task.Run(() => CreateRunContainer(item));
+                var task = CreateRunContainer(item);
                 var subRunContainer = task.GetAwaiter().GetResult();
-                var taskRun = new TaskRunInfo(subRunContainer, task);
+                var taskRun = new TaskRunInfo(subRunContainer);
                 _tasks.Add(redisSubAttribute.Name, taskRun);
             }
         }

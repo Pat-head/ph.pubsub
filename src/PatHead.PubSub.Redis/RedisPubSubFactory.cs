@@ -17,6 +17,7 @@ namespace PatHead.PubSub.Redis
     public class RedisPubSubFactory : AbstractPubSubFactory
     {
         private readonly ILogger<RedisPubSubFactory> _logger;
+
         private readonly RedisPubSubOption _options;
 
         private Dictionary<string, TaskRunInfo> _tasks = new Dictionary<string, TaskRunInfo>();
@@ -41,7 +42,6 @@ namespace PatHead.PubSub.Redis
         /// <exception cref="NotImplementedException"></exception>
         public void PrintStatus()
         {
-            var asd = _tasks;
             StringBuilder builder = new StringBuilder();
             builder.AppendLine($"Current Status:");
             builder.AppendLine($"Run Queue: {_tasks.Count}");
@@ -58,9 +58,8 @@ namespace PatHead.PubSub.Redis
             foreach (var item in scanResModel.Items)
             {
                 var redisSubAttribute = (RedisSubAttribute)item.SubAttribute;
-                var task = Task.Run(() => CreateRunContainer(item));
-                var subRunContainer = task.GetAwaiter().GetResult();
-                var taskRun = new TaskRunInfo(subRunContainer, task);
+                var subRunContainer = CreateRunContainer(item).GetAwaiter().GetResult();
+                var taskRun = new TaskRunInfo(subRunContainer);
                 _tasks.Add(redisSubAttribute.Name, taskRun);
             }
         }
@@ -76,6 +75,7 @@ namespace PatHead.PubSub.Redis
             {
                 return taskRunInfo.SubRunContainer;
             }
+
             return null;
         }
 
@@ -87,6 +87,8 @@ namespace PatHead.PubSub.Redis
 
             var redisProvider = this.ServiceProvider.GetRequiredService<RedisProvider>();
 
+            var loggerFactory = this.ServiceProvider.GetRequiredService<ILoggerFactory>();
+
             var finalKey = Generator.GenerateKey(
                 redisSubAttribute.Key,
                 true,
@@ -96,13 +98,13 @@ namespace PatHead.PubSub.Redis
 
             if (redisSubAttribute.Seize)
             {
-                var container = new MsQueueRunContainer(finalKey, instance, redisProvider);
+                var container = new MsQueueRunContainer(finalKey, instance, redisProvider, loggerFactory);
                 await container.Run();
                 return container;
             }
             else
             {
-                var container = new MbQueueRunContainer(finalKey, instance, redisProvider);
+                var container = new MbQueueRunContainer(finalKey, instance, redisProvider, loggerFactory);
                 await container.Run();
                 return container;
             }

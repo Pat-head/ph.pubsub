@@ -32,6 +32,8 @@ namespace PatHead.PubSub.RabbitMq.RunContainers
 
         public int Count { get; set; }
 
+        public bool IsCancel { get; set; }
+        
         /// <summary>
         /// Run
         /// </summary>
@@ -79,6 +81,11 @@ namespace PatHead.PubSub.RabbitMq.RunContainers
                 consumer: consumer);
 
             return Task.CompletedTask;
+        }
+
+        public Task Stop()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using PatHead.PubSub.Core;
 
 namespace PatHead.PubSub.Redis.RunContainers
@@ -7,11 +8,10 @@ namespace PatHead.PubSub.Redis.RunContainers
     /// <summary>
     /// 持久化广播队列
     /// </summary>
-    public class MbQueueRunContainer : ISubRunContainer
+    public class MbQueueRunContainer : RedisBaseSubRunContainer
     {
         private readonly ISub _sub;
         private readonly RedisProvider _redisProvider;
-        private readonly string _key;
 
         /// <summary>
         /// RedisSubRunContainer
@@ -19,14 +19,15 @@ namespace PatHead.PubSub.Redis.RunContainers
         /// <param name="key"></param>
         /// <param name="sub"></param>
         /// <param name="redisProvider"></param>
-        public MbQueueRunContainer(string key, ISub sub, RedisProvider redisProvider)
+        /// <param name="factory">ILoggerFactory</param>
+        public MbQueueRunContainer(string key,
+            ISub sub,
+            RedisProvider redisProvider,
+            ILoggerFactory factory) : base(key, factory)
         {
-            _key = key;
             _sub = sub;
             _redisProvider = redisProvider;
         }
-
-        public int Count { get; set; }
 
         /// <summary>
         /// Run
@@ -34,22 +35,39 @@ namespace PatHead.PubSub.Redis.RunContainers
         /// <returns></returns>
         public Task Run()
         {
-            var random = Guid.NewGuid().ToString("N");
-
-            _redisProvider.GetClient()
-                .SubscribeListBroadcast(_key, random, msg =>
-                {
-                    // 为空好像类似于健康检查，暂且不管
-                    if (string.IsNullOrEmpty(msg))
-                    {
-                        return;
-                    }
-                    Count++;
-
-                    _sub.Handler(msg).GetAwaiter().GetResult();
-                });
-
             return Task.CompletedTask;
+        }
+
+
+        /// <summary>
+        /// LoopExecute
+        /// </summary>
+        protected override async Task LoopExecute()
+        {
+            try
+            {
+                var random = Guid.NewGuid().ToString("N");
+
+                _redisProvider.GetClient()
+                    .SubscribeListBroadcast(Key, random, msg =>
+                    {
+                        // 为空好像类似于健康检查，暂且不管
+                        if (string.IsNullOrEmpty(msg))
+                        {
+                            return;
+                        }
+
+                        Count++;
+                        _sub.Handler(msg).GetAwaiter().GetResult();
+                    });
+            }
+            catch (Exception e)
+            {
+                Logger.LogCritical("database 后台处理redis队列失败,异常信息：{errMsg},{LogDate}",
+                    e.ToString(), DateTime.UtcNow);
+                TimeSpan span = TimeSpan.FromMilliseconds(100);
+                await Task.Delay(span, TokenSource.Token).ConfigureAwait(false);
+            }
         }
     }
 }

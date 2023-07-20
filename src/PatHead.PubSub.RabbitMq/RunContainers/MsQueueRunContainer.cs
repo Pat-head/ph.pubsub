@@ -30,6 +30,8 @@ namespace PatHead.PubSub.RabbitMq.RunContainers
         }
 
         public int Count { get; set; }
+        
+        public bool IsCancel { get; set; }
 
         /// <summary>
         /// Run
@@ -37,6 +39,7 @@ namespace PatHead.PubSub.RabbitMq.RunContainers
         /// <returns></returns>
         public Task Run()
         {
+            
             var connection = _rabbitMqProvider.GetClient();
 
             var channel = connection.CreateModel();
@@ -71,6 +74,11 @@ namespace PatHead.PubSub.RabbitMq.RunContainers
                 consumer: consumer);
 
             return Task.CompletedTask;
+        }
+
+        public Task Stop()
+        {
+            throw new NotImplementedException();
         }
     }
 }

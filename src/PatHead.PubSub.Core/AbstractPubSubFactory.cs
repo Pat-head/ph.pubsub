@@ -89,8 +89,6 @@ namespace PatHead.PubSub.Core
     /// </summary>
     public class TaskRunInfo
     {
-        public Task Task { get; }
-
         public ISubRunContainer SubRunContainer { get; }
 
         /// <summary>
@@ -98,10 +96,9 @@ namespace PatHead.PubSub.Core
         /// </summary>
         /// <param name="subRunContainer"></param>
         /// <param name="task"></param>
-        public TaskRunInfo(ISubRunContainer subRunContainer, Task task)
+        public TaskRunInfo(ISubRunContainer subRunContainer)
         {
             SubRunContainer = subRunContainer;
-            Task = task;
         }
     }
 }

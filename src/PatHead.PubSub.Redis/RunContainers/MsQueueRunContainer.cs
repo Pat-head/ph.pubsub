@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using PatHead.PubSub.Core;
 
 namespace PatHead.PubSub.Redis.RunContainers
@@ -7,11 +9,10 @@ namespace PatHead.PubSub.Redis.RunContainers
     /// <summary>
     /// 持久化争抢队列
     /// </summary>
-    public class MsQueueRunContainer : ISubRunContainer
+    public class MsQueueRunContainer : RedisBaseSubRunContainer
     {
         private readonly ISub _sub;
         private readonly RedisProvider _redisProvider;
-        private readonly string _key;
 
         /// <summary>
         /// RedisSubRunContainer
@@ -19,35 +20,45 @@ namespace PatHead.PubSub.Redis.RunContainers
         /// <param name="key"></param>
         /// <param name="sub"></param>
         /// <param name="redisProvider"></param>
-        public MsQueueRunContainer(string key, ISub sub, RedisProvider redisProvider)
+        /// <param name="factory">ILoggerFactory</param>
+        public MsQueueRunContainer(string key,
+            ISub sub,
+            RedisProvider redisProvider,
+            ILoggerFactory factory) : base(key, factory)
         {
-            _key = key;
             _sub = sub;
             _redisProvider = redisProvider;
         }
 
-        public int Count { get; set; }
-
         /// <summary>
-        /// Run
+        /// LoopExecute
         /// </summary>
-        /// <returns></returns>
-        public Task Run()
+        protected override async Task LoopExecute()
         {
-            _redisProvider.GetClient().SubscribeList(_key, msg =>
+            Thread.Sleep(10);
+            try
             {
-                // 为空好像类似于健康检查，暂且不管
-                if (string.IsNullOrEmpty(msg))
+                var queuePop =
+                    _redisProvider.GetClient().BRPop(5, Key);
+
+                if (queuePop != null)
                 {
-                    return;
+                    Count++;
+                    _sub.Handler(queuePop).GetAwaiter().GetResult();
                 }
-
-                Count++;
-
-                _sub.Handler(msg).GetAwaiter().GetResult();
-            });
-
-            return Task.CompletedTask;
+                else
+                {
+                    TimeSpan span = TimeSpan.FromSeconds(10);
+                    await Task.Delay(span, TokenSource.Token).ConfigureAwait(false);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogCritical("database 后台处理redis队列失败,异常信息：{errMsg},{LogDate}",
+                    e.ToString(), DateTime.UtcNow);
+                TimeSpan span = TimeSpan.FromMilliseconds(100);
+                await Task.Delay(span, TokenSource.Token).ConfigureAwait(false);
+            }
         }
     }
 }
